@@ -1,4 +1,4 @@
-# Multimodal immunogenomic biomarker analysis of tumours from pediatric patients enrolled to a phase 1-2 study of single-agent atezolizumab
+# Biomarker analysis of tumours from pediatric patients treated with atezolizumab 
 
 This repo contains custom codes used for figures in the manuscript "Multimodal immunogenomic biomarker analysis of tumours from pediatric patients enrolled to a phase 1-2 study of single-agent atezolizumab".
 
