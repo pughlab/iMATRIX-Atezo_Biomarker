@@ -7,5 +7,9 @@ This repo contains custom codes used for figures in the manuscript "Multimodal i
 Individual patient-level data, including de-identified clinical metadata, raw RNAseq data, raw TCRseq data, and processed F1 sequencing data will be made available to qualified researchers at the European Genome-Phenome Archive under accession number EGAS00001006004. For further information, please contact lead authors. 
 
 ## Contact
+
+Arash Nabbi: arash.nabbi@uhnresearch.ca
+
 Katherine E. Hutchinson: hutchinson.katherine@gene.com
+
 Trevor J. Pugh: trevor.pugh@utoronto.ca
