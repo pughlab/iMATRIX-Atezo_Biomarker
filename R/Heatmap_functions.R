@@ -16,9 +16,9 @@ age_hm.fx <- function(age_mat){
                    cluster_rows = FALSE,
                    #aesthestics
                    col = col_fun,
-                   row_names_gp = gpar(fontsize = 20),
+                   row_names_gp = gpar(fontsize = 10),
                    height = unit(1, "cm"),
-                   column_title_gp = gpar(fontsize = 42),
+                   column_title_gp = gpar(fontsize = 10),
                    row_title = NULL)
   return(age_hm)
 }
@@ -38,9 +38,9 @@ type_hm.fx <- function(tumortype_mat){
                     cluster_rows = FALSE,
                     #aesthestics
                     col = colpal,
-                    row_names_gp = gpar(fontsize = 20),
+                    row_names_gp = gpar(fontsize = 10),
                     height = unit(1, "cm"),
-                    column_title_gp = gpar(fontsize = 42),
+                    column_title_gp = gpar(fontsize = 10),
                     row_title = NULL)
   return(type_hm)
 }
@@ -61,9 +61,9 @@ cancer_hm.fx <- function(cancer_mat){
                       cluster_rows = FALSE,
                       #aesthestics
                       col = colpal,
-                      row_names_gp = gpar(fontsize = 20),
+                      row_names_gp = gpar(fontsize = 10),
                       height = unit(1, "cm"),
-                      column_title_gp = gpar(fontsize = 42),
+                      column_title_gp = gpar(fontsize = 10),
                       row_title = NULL)
   return(cancer_hm)
 }
@@ -85,9 +85,9 @@ origin_hm.fx <- function(origin_mat){
                       cluster_rows = FALSE,
                       #aesthestics
                       col = colpal,
-                      row_names_gp = gpar(fontsize = 20),
+                      row_names_gp = gpar(fontsize = 10),
                       height = unit(1, "cm"),
-                      column_title_gp = gpar(fontsize = 42),
+                      column_title_gp = gpar(fontsize = 10),
                       row_title = NULL)
   return(origin_hm)
 }
@@ -113,9 +113,9 @@ response_hm.fx <- function(response_mat){
                         cluster_rows = FALSE,
                         #aesthestics
                         col = colpal,
-                        row_names_gp = gpar(fontsize = 20),
+                        row_names_gp = gpar(fontsize = 10),
                         height = unit(1, "cm"),
-                        column_title_gp = gpar(fontsize = 42),
+                        column_title_gp = gpar(fontsize = 10),
                         row_title = NULL)
   return(response_hm)
   
@@ -146,9 +146,9 @@ cohorts_hm.fx <- function(cohorts_mat){
                       cluster_rows = FALSE,
                       #aesthestics
                       col = colpal,
-                      column_names_gp = gpar(fontsize = 15),
+                      column_names_gp = gpar(fontsize = 10),
                       height = unit(1, "cm"),
-                      row_names_gp = gpar(fontsize = 20))
+                      row_names_gp = gpar(fontsize = 10))
   return(cohort_hm)   
 }
 
@@ -171,10 +171,10 @@ ihc_hm.fx <- function(ihc_mat){
                    #row_dend_width = unit(8, "cm"),
                    #aesthestics
                    col = col_fun,
-                   column_names_gp = gpar(fontsize = 20),
-                   row_names_gp = gpar(fontsize = 20),
+                   column_names_gp = gpar(fontsize = 10),
+                   row_names_gp = gpar(fontsize = 10),
                    height = unit(nrow(ihc_mat), "cm"),
-                   column_title_gp = gpar(fontsize = 20),
+                   column_title_gp = gpar(fontsize = 10),
                    column_title = NULL,
                    row_title = NULL)
   return(ihc_hm)   
