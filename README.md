@@ -1,6 +1,17 @@
 # Biomarker analysis of tumours from pediatric patients treated with atezolizumab 
 
-This repo contains custom codes used for figures in the manuscript "Multimodal immunogenomic biomarker analysis of tumours from pediatric patients enrolled to a phase 1-2 study of single-agent atezolizumab".
+This repo contains custom R codes used for figures in the manuscript "Multimodal immunogenomic biomarker analysis of tumours from pediatric patients enrolled to a phase 1-2 study of single-agent atezolizumab".
+
+## Dependencies
+survminer,
+survival,
+ggplot2,
+ComplexHeatmap,
+circlize,
+iNEXT
+
+## How to run
+Clone the repo to your home directory (~/). Run scripts in main/. Output will be in folder out/.
 
 ## Data availability
 
