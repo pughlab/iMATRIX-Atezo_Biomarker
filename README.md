@@ -11,7 +11,7 @@ circlize,
 iNEXT
 
 ## How to run
-Clone the repo to your home directory (~/). Run scripts in main/. Output will be in folder out/.
+Clone the repo to your home directory (`~/`). Run scripts in `main/`. Output will be in folder `out/`.
 
 ## Data availability
 
