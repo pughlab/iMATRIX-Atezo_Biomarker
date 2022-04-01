@@ -5,7 +5,6 @@
 library(survminer)
 library(survival)
 
-#Fig2A
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
 datapath <- paste0(mainpath,"data/")
 
@@ -26,6 +25,8 @@ summary(metadata$IHC_CD8)
 message("summary for CD3 staining (IHC) in the iMATRIX-Atezo:")
 summary(metadata$IHC_CD3)
 
+
+#Fig2A
 metadata$CD8group <- NA
 metadata$CD8group[metadata$IHC_CD8 >= 1.242] <- "High"
 metadata$CD8group[metadata$IHC_CD8 > 0.070 &
