@@ -8,7 +8,7 @@ survival,
 ggplot2,
 ComplexHeatmap,
 circlize,
-iNEXT
+Hmisc
 
 ## How to run
 Clone the repo to your home directory (`~/`). Run scripts in `main/`. Output will be in folder `out/`.
