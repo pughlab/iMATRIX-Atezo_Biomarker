@@ -35,7 +35,7 @@ metadata$PDL1group[metadata$PDL1 == "Low"] <- "Low/No"
 metadata$PDL1group[metadata$PDL1 == "No expression"] <- "Low/No"
 
 
-sfit <- survfit(Surv(TRTDUR, progressed)~ CD8group, data= metadata)
+sfit <- survfit(Surv(TRTDUR, progressed)~ PDL1group, data= metadata)
 
 kmplot <- ggsurvplot(sfit, conf.int=FALSE, palette = c("#ED2024", "#3953A4"),
                      pval = TRUE, pval.size = 8, pval.coord = c(300, 0.75),
@@ -44,7 +44,7 @@ kmplot <- ggsurvplot(sfit, conf.int=FALSE, palette = c("#ED2024", "#3953A4"),
                      font.main = 23, font.x = 25,font.y = 25, font.tickslab = 20) 
 
 kmplot$table <- kmplot$table + theme(axis.text.x = element_text(size = 20))
-kmplot$plot <- kmplot$plot + labs(title = "KM analysis of PDL1 protein expression")
+kmplot$plot <- kmplot$plot + labs(title = "PD-L1 protein expression")
 
 pdf(file = paste0(plotpath,"Fig3A.pdf"),
     width = 10, 
@@ -60,7 +60,7 @@ metadata$PDL1group <- factor(metadata$PDL1group, levels = c("Low/No", "High"))
 coxmodel <- coxph(Surv(TRTDUR, progressed)~ PDL1group + cancer + AGE, data= metadata) 
 
 fig3b <- forest_model(coxmodel,exponentiate = TRUE) + 
-  labs(title = "Cox for PDL1 protein expression adjusting for cancer group")
+  labs(title = "PDL1 protein expression")
 
 pdf(file = paste0(plotpath,"Fig3B.pdf"),
     width = 15, 
