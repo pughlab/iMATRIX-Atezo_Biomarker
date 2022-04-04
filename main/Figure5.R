@@ -30,7 +30,6 @@ gene_module <- read.csv(file = paste0(datapath, "th_gene_module_wgcna.csv"),
 GO_module <- read.csv(file = paste0(datapath, "th_GO_module_wgcna.csv"),
                       header = T, stringsAsFactors = F, check.names = F) 
 
-
 #Modules ordered based on hierarchical clustering of consensus module eigengenes
 orderedlabels <- c('4','18','17','28','6','7','14','24','23','27','3','13','22','26')
 

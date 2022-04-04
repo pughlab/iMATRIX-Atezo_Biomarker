@@ -18,22 +18,20 @@ source(paste0(mainpath, "R/ggplot2_theme.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
 source(paste0(mainpath, "R/Splot_function.R"))
 
-metadata <- read.csv(file.path(datapath,"metadata.csv"), header = T, stringsAsFactors = F, check.names = F)
+#metadata <- read.csv(file.path(datapath,"metadata.csv"), header = T, stringsAsFactors = F, check.names = F)
+#metadata <- metadata[ !is.na(metadata$observed_Shannon),]
 
-metadata <- metadata[ !is.na(metadata$observed_Shannon),]
+#Fig4A
 
-#Fig3A
+compldfle <- read.csv(file.path(datapath,"anonymized_TableS2.csv"), header = T, stringsAsFactors = F, check.names = F)
 
-compldfle$samplename <- factor(compldfle$samplename, levels = metadata_trb$sample_id_DNA)
+compldfle$samplename <- as.factor(compldfle$trunc_anonymized_sample_id)
 
+compldfle$cloneno <- as.factor(compldfle$cloneno)
 
-clonenocol = rep("#ffffff", 
-                 nlevels(as.factor(compldfle$cloneno)))
+clonenocol = rep("#ffffff", nlevels(compldfle$cloneno))
 
-clonpt <- ggplot(data = compldfle, 
-                 aes(y = cloneFraction, 
-                     x = samplename, 
-                     fill = cloneno)) + 
+clonpt <- ggplot(data = compldfle, aes(y = cloneFraction, x = samplename, fill = cloneno)) + 
   geom_bar(colour = "#000000", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -47,25 +45,26 @@ clonpt <- ggplot(data = compldfle,
                                         colour = NA),
         panel.border=element_blank(),
         plot.margin = unit(c(0,0,0,0),"cm")) +
-  scale_fill_manual(values = clonenocol,
-                    guide = FALSE) 
+  scale_fill_manual(values = clonenocol,guide = FALSE) 
+
+
+
+
+
 
 
 metadata_trb$Div_group <- NA
 metadata_trb$Div_group[metadata_trb$observed_Shannon >= 80.269] <- "High"
-
 metadata_trb$Div_group[metadata_trb$observed_Shannon < 80.269 &
                          metadata_trb$observed_Shannon > 9.527] <- "Intermediate"
-
 metadata_trb$Div_group[metadata_trb$observed_Shannon <= 9.527] <- "Low"
+
 
 colpal <- c("High" = "#ED2024",
             "Intermediate" = "#adadad",
             "Low" = "#3953A4")
 
-divplot <- ggplot(data = metadata_trb, 
-                  aes(y = observed_Shannon, 
-                      x = sample_id_DNA)) + 
+divplot <- ggplot(data = metadata_trb, aes(y = observed_Shannon, x = sample_id_DNA)) + 
   geom_bar(aes(fill = Div_group),colour = "#000000", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -75,8 +74,7 @@ divplot <- ggplot(data = metadata_trb,
         legend.position = "none") +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "transparent",
-                                        colour = NA),
+        panel.background = element_rect(fill = "transparent",colour = NA),
         panel.border=element_blank(),
         plot.margin = unit(c(0,0,0,0),"cm")) 
 
@@ -99,9 +97,7 @@ for(i in 1:nrow(metadata_trb)){
 #convert NAs to zero
 metadata_trb$gliph2_type[ is.na(metadata_trb$gliph2_type)] <- 0
 
-gliphplot <- ggplot(data = metadata_trb, 
-                    aes(y = gliph2_type, 
-                        x = sample_id_DNA)) + 
+gliphplot <- ggplot(data = metadata_trb, aes(y = gliph2_type, x = sample_id_DNA)) + 
   geom_bar(colour = "#000000", fill = "#adadad", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -111,8 +107,7 @@ gliphplot <- ggplot(data = metadata_trb,
         legend.position = "none") +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "transparent",
-                                        colour = NA),
+        panel.background = element_rect(fill = "transparent", colour = NA),
         panel.border=element_blank(),
         plot.margin = unit(c(0,0,0,0),"cm")) 
 
@@ -124,7 +119,7 @@ pdf(file = paste0(plotpath,"TRB_clonplot.pdf"),
 align_plots1(divplot, clonpt, gliphplot)
 dev.off()
 
-# Fig3B
+# Fig4B
 
 #log10
 metadata$log10shann <- log10(metadata$observed_Shannon)
