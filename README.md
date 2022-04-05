@@ -11,7 +11,7 @@ circlize,
 Hmisc
 
 ## How to run
-Clone the repo to your home directory (`~/`). Run scripts in `main/`. Output will be in folder `out/`.
+Clone the repo to your home directory (`~/`). Upon data request approval (see below), download supplementary tables in `data/`. Run scripts in `main/`. Output will be in folder `out/`.
 
 ## Data availability
 
