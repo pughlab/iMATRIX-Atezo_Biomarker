@@ -14,7 +14,7 @@ setwd(mainpath)
 source(paste0(mainpath, "R/ggplot2_theme.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
 
-metadata <- read.csv(file.path(datapath,"metadata.csv"), header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v2.csv"), header = T, stringsAsFactors = F, check.names = F)
 
 # Order by cancer group and treatment duration
 metadata <- metadata[order(metadata$cancer, metadata$TRTDUR), ]
@@ -66,8 +66,7 @@ TMB_ha <- HeatmapAnnotation(`Tumour mutation\nburden` = anno_points(log10(metada
                                                                                      labels = c("<0.1", "1", "10", "100"))),
                            annotation_name_gp = gpar(fontsize = 10))
 
-age_ha <- HeatmapAnnotation(Age = anno_barplot(metadata$AGE, height = unit(2, "cm")),
-                           annotation_name_gp = gpar(fontsize = 10))
+age_ha <- HeatmapAnnotation(Age = anno_barplot(metadata$AGE, height = unit(2, "cm")),annotation_name_gp = gpar(fontsize = 10))
 
 mycohort <- metadata$disease_group
 names(mycohort) <- metadata$sample_id
@@ -76,7 +75,7 @@ rownames(mycohorts) <- "Cohort"
 
 cohorts_hm <- cohorts_hm.fx(mycohorts)
 
-myresponse <- metadata$AVALC
+myresponse <- metadata$`BCOR-INV`
 names(myresponse) <- metadata$sample_id
 myresponse <- t(as.matrix(myresponse))
 rownames(myresponse) <- "Objective response"
