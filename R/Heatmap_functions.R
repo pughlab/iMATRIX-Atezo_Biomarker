@@ -105,7 +105,7 @@ response_hm.fx <- function(response_mat){
   
   response_hm = Heatmap(response_mat,
                         #titles and names
-                        name = "RECIST Response",
+                        name = "Response",
                         show_row_names = TRUE,
                         show_column_names = FALSE,    
                         #clusters

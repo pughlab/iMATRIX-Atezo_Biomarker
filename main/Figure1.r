@@ -19,7 +19,7 @@ metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_T
 # Order by cancer group and treatment duration
 metadata <- metadata[order(metadata$cancer, metadata$TRTDUR), ]
 
-PFS_ha <- HeatmapAnnotation(`Treatment duration` = anno_barplot(metadata$TRTDUR), height = unit(3, "cm"),
+PFS_ha <- HeatmapAnnotation(`Treatment duration\n(Days)` = anno_barplot(metadata$TRTDUR), height = unit(3, "cm"),
                           annotation_name_gp = gpar(fontsize = 10))
 
 

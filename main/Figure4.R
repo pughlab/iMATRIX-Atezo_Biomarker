@@ -50,9 +50,6 @@ clonpt <- ggplot(data = compldfle, aes(y = cloneFraction, x = samplename, fill =
 
 
 
-
-
-
 metadata_trb$Div_group <- NA
 metadata_trb$Div_group[metadata_trb$observed_Shannon >= 80.269] <- "High"
 metadata_trb$Div_group[metadata_trb$observed_Shannon < 80.269 &
