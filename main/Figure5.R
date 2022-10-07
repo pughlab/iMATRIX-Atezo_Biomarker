@@ -58,129 +58,118 @@ vp
 dev.off()
 
 
+#Fig5C
+load(paste0(datapath, "Consensus_Network_TH_manual_signed_20.RData"))
 
+mycons <- rbind(consMEs[[1]]$data, consMEs[[2]]$data, consMEs[[3]]$data, consMEs[[4]]$data,
+                consMEs[[5]]$data, consMEs[[6]]$data, consMEs[[7]]$data)
 
+# remove unclustered module==ME0
+mycons$ME0 <- NULL
 
-
-wgcnagenes_mat <- read.csv(file = paste0(datapath, "th_tpm_wgcna_genes.csv"),
-                          header = T, stringsAsFactors = F, row.names = 1, check.names = F) 
-
-gene_module <- read.csv(file = paste0(datapath, "th_gene_module_wgcna.csv"),
-                        header = T, stringsAsFactors = F,row.names = 1, check.names = F) 
-
-GO_module <- read.csv(file = paste0(datapath, "th_GO_module_wgcna.csv"),
-                      header = T, stringsAsFactors = F, check.names = F) 
-
-#Modules ordered based on hierarchical clustering of consensus module eigengenes
-orderedlabels <- c('4','18','17','28','6','7','14','24','23','27','3','13','22','26')
-
-# create a vector of ordered modules with genes as names
-modulelabels <- as.character(gene_module$moduleLabel)
-names(modulelabels) <- rownames(gene_module)
-modulelabels <- modulelabels[order(match(modulelabels, orderedlabels))]
-
-# order tpm matrix based on modules
-wgcnagenes_mat <- wgcnagenes_mat[names(modulelabels),]
-
-# correlation matrix for genes from wgcna
-cor_mat <- rcorr(t(wgcnagenes_mat), type = "pearson")
-
-# Heatmap for modules and gene correlations
-set.seed(8)
-myColors <- randomcoloR::distinctColorPalette(14)
-
-hm_modules <- Heatmap(modulelabels,
-                      #titles and names
-                      name = "Modules",
-                      show_row_names = FALSE,
-                      show_column_names = FALSE,    
-                      #clusters
-                      cluster_columns = FALSE,
-                      cluster_rows = FALSE,
-                      #aesthestics
-                      col = myColors,
-                      row_names_gp = gpar(fontsize = 20),
-                      width = unit(1, "cm"),
-                      column_title_gp = gpar(fontsize = 42),
-                      row_title = NULL)
+# make a correlation matrix 
+cor_mat <- rcorr(as.matrix(mycons), type = "pearson")
 
 col_fun <- colorRamp2(c(-1, 0, 1), c("blue","white", "red"))
 hm_cor <- Heatmap(cor_mat$r,
                   #titles and names   
                   name = "Gene correlations",   
-                  show_row_names = FALSE,
-                  show_column_names = FALSE,     
+                  show_row_names = TRUE,
+                  show_column_names = TRUE,     
                   #clusters and orders  
-                  cluster_columns = FALSE,
-                  cluster_rows =  FALSE,
-                  show_column_dend = FALSE,
+                  cluster_columns = TRUE,
+                  cluster_rows =  TRUE,
+                  show_column_dend = TRUE,
+                  row_dend_width = unit(5, "cm"),
+                  column_dend_height = unit(5, "cm"),
                   #aesthestics
                   col = col_fun, 
-                  column_names_gp = gpar(fontsize = 20),
-                  row_names_gp = gpar(fontsize = 20),
-                  column_title_gp = gpar(fontsize = 20),
+                  column_names_gp = gpar(fontsize = 30),
+                  row_names_gp = gpar(fontsize = 30),
+                  column_title_gp = gpar(fontsize = 30),
                   column_title = NULL,
-                  row_title = NULL, use_raster = TRUE,
-                  raster_quality = 5)
+                  row_title = NULL,
+                  show_heatmap_legend = TRUE)
 
-pdf(file = paste0(plotpath,"Fig5A.pdf"),
+pdf(file = paste0(plotpath,"Fig5C.pdf"),
     width = 20, 
     height = 20,
     useDingbats = FALSE)
-draw(hm_cor + hm_modules)
+draw(hm_cor)
 dev.off()
 
-#Fig5B
+#Fig5D
 
-metadata <- read.csv(file.path(datapath,"IND_estimate_metadata_IHC_trb_tmb.csv"),header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), header = T, stringsAsFactors = F, check.names = F)
+
+## gene_module
+gene_module_th <- read.csv(file = paste0(datapath, "gene_module_treehouse_manual_signed_20.csv"),
+                           header = T, stringsAsFactors = F,row.names = 1,check.names = F) 
+gene_module_th <- gene_module_th[ gene_module_th$moduleColor != "grey",]
+gene_module_th$moduleLabel <- paste0("TH_", gene_module_th$moduleLabel)
+
+## GO_module
+GO_modules <- read.csv(file.path(datapath,"GO_TH_cons_manual_signed_20.csv"),
+                       header = T, stringsAsFactors = F, check.names = F, row.names = 1)  
+GO_modules <- GO_modules[ GO_modules$module != "grey",]
+GO_modules$moduleLabel <- gene_module_th$moduleLabel[match(GO_modules$module, gene_module_th$moduleColor)]
+
+## Add one MF for TH_28 module
+TH28_MF <- GO_modules[ GO_modules$termName == "transcription regulator activity",]
+GO_modules <- GO_modules[GO_modules$termOntology == "BP",]
+GO_modules <- rbind(GO_modules, TH28_MF)
+
+## just to remove small GO terms
+GO_modules <- GO_modules[ GO_modules$nModGenesInTerm >= 9,]
+
+## get one rather simplified GO term for each module by choosing the GO terrm with minimum number of genes (> 9)
+GO_modules$myterm <- NA
+
+for(i in unique(GO_modules$moduleLabel)){
+  tmp <- GO_modules[ GO_modules$moduleLabel == i,]
+  moduleterm <- tmp$termName[tmp$nModGenesInTerm == min(tmp$nModGenesInTerm)][1] #use one term if min returns two terms
+  GO_modules$myterm[GO_modules$moduleLabel == i] <- moduleterm
+  
+}
+
+dim(gene_module_th)
+
+dim(GO_modules)
+
+# expression matrix
+tpm_mat <- read.csv(file = paste0(datapath, "IND_tpm_hg38_final.csv"), 
+                    header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
+
+hgnc_ensembl_ids <- read.csv(file = paste0(datapath, "hgnc_ensembl_ids.csv"), 
+                             header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
+
+#Use Ensembl id to compare iMatrix data and TH data. They are more reliable
+rownames(tpm_mat) <- hgnc_ensembl_ids$ensembl_id
+
+# log2
+tpm_mat_log2 <- log2(tpm_mat + 1)
 
 
-tpm_mat <- read.csv(file = paste0(datapath, "exp_mat/INDICATE.tpm_hg38_ENSG_HUGO.csv"), 
-                    header = T, stringsAsFactors = F,check.names = F) 
-
-
-
-tpm_mat_ensg <- tpm_mat[!is.na(tpm_mat$ensembl_id),]
-
-tpm_mat_ensg$HGNC_symbol <- NULL
-rownames(tpm_mat_ensg) <- gsub("[.].*", "",tpm_mat_ensg$ensembl_id)
-tpm_mat_ensg$ensembl_id <- NULL
-
-tpm_mat_ensg_t <- t(tpm_mat_ensg)
-
-rownames(tpm_mat_ensg_t) <- gsub(".*rnaaccess_", "", rownames(tpm_mat_ensg_t))
-rownames(tpm_mat_ensg_t) <- gsub("_.*", "", rownames(tpm_mat_ensg_t))
-rownames(tpm_mat_ensg_t) <- toupper(rownames(tpm_mat_ensg_t))
-
-tpm_mat_ensg_t <- log2(tpm_mat_ensg_t + 1)
-
-tpm_mat_ensg_t_matched <- tpm_mat_ensg_t[rownames(tpm_mat_ensg_t) %in% metadata$sample_id,]
-
-
-
-
-
-
-mygene_modules <- gene_module_th[ gene_module_th$ensembl_id %in% colnames(tpm_mat_ensg_t_matched),]
+# genes in TH and iMATRIX
+mygene_modules <- gene_module_th[ gene_module_th$ensembl_id %in% rownames(tpm_mat_log2),]
 
 
 #Order same as heatmap
-labelorders <- c('TH_4','TH_18','TH_17','TH_28','TH_6','TH_7','TH_14',
-                 'TH_24','TH_23','TH_27','TH_3','TH_13','TH_22','TH_26')
+labelorders <- c('TH_7','TH_14','TH_17','TH_24','TH_28','TH_6','TH_18',
+                 'TH_4','TH_22','TH_27','TH_3','TH_13','TH_26','TH_23')
 
-module_sample <- matrix(ncol = nrow(tpm_mat_ensg_t_matched), nrow = length(unique(mygene_modules$moduleLabel)))
+module_sample <- matrix(ncol = ncol(tpm_mat_log2), nrow = length(unique(mygene_modules$moduleLabel)))
 rownames(module_sample) <- labelorders
-colnames(module_sample) <- rownames(tpm_mat_ensg_t_matched)
+colnames(module_sample) <- colnames(tpm_mat_log2)
 
 for(mod in 1:nrow(module_sample)){
   mymod <- rownames(module_sample)[mod]    
   modGenes <- mygene_modules$ensembl_id[which(mygene_modules$moduleLabel == mymod)]
-  genes <- tpm_mat_ensg_t_matched[,modGenes]
+  genes <- tpm_mat_log2[modGenes,]
   if(length(modGenes) > 1){
-    averagegenes <- apply(genes,1,mean)
+    averagegenes <- apply(genes,2,mean)
     module_sample[mod,] <- averagegenes}
 }
-
 
 module_sample_t <- as.data.frame(t(module_sample))
 module_sample_t$sample_id <- rownames(module_sample_t)
@@ -207,16 +196,15 @@ module_cox <- cbind(module_cox, fdr_df)
 
 module_cox <- as.data.frame(module_cox)
 
-
 module_cox$term <- NA
-
 module_cox$term <- GO_modules$myterm[match(rownames(module_cox),GO_modules$moduleLabel)]
 
+# some cleanup for terms
 module_cox$term[module_cox$term == "antigen processing and presentation of exogenous peptide antigen via MHC class I, TAP-dependent" ] <- 
   "antigen processing and presentation"
 module_cox$term[module_cox$term == "SRP-dependent cotranslational protein targeting to membrane" ] <- "protein targeting to ER"
 
-
+# HR table
 hrs <- module_cox[,c(2,6,7)]
 hrs <- rbind(NA,hrs)
 
@@ -226,11 +214,46 @@ tabtext <- cbind(module_cox[,9],tabtext)
 colnames(tabtext) <- c("Signature", "Hazard Ratio", "p-value", "FDR")
 rownames(tabtext) <- NULL
 tabtext <- rbind(colnames(tabtext),tabtext)
-
 tabtext$`Hazard Ratio` <- NULL
 
+# from SO
+fn <- local({
+  i = 0
+  b_clrs = c(rep("black", 9), "red", "black", rep("red", 2), "black" )
+  l_clrs = c(rep("black", 9), "red", "black", rep("red", 2), "black" )
+  function(..., clr.line, clr.marker){
+    i <<- i + 1
+    fpDrawNormalCI(..., clr.line = l_clrs[i], clr.marker = b_clrs[i])
+  }
+})
 
-fplot <- forestplot(tabtext, hrs, new_page = TRUE, xlog = TRUE,
-                    title = "Univariable model (iMATRIX)", boxsize = 0.25)
+pdf(file = paste0(plotpath,"Fig5D.pdf"),
+    width = 7, height = 10,
+    useDingbats = FALSE, onefile = F)
+forestplot(tabtext, fn.ci_norm = fn, hrs, new_page = TRUE, xlog = TRUE,
+           title = "Survival analysis (iMATRIX-atezo)(p-value, FDR)", boxsize = 0.25)
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
