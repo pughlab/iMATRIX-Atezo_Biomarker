@@ -5,6 +5,8 @@
 library(survminer)
 library(survival)
 library(Hmisc)
+library(fgsea)
+library(ggrepel)
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
 datapath <- paste0(mainpath,"data/")
@@ -16,10 +18,49 @@ plotpath <- paste0(mainpath,"out/")
 setwd(mainpath)
 
 source(paste0(mainpath, "R/ggplot2_theme.R"))
+source(paste0(mainpath, "R/plotting_functions.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
-source(paste0(mainpath, "R/Splot_function.R"))
 
 #Fig5A
+
+load(file = paste0(datapath, "DESeq2_results_allsamples.RData"))
+
+res_all[which(res_all$padj < 0.1),]
+
+Hs.H <- read.table(paste0(datapath, "h.all.v7.1.symbols.gmt"), 
+                   header = F, check.names = F, sep = "\t", fill = T, stringsAsFactors = F)
+
+#clean up V1 for aesthetics
+Hs.H$V1 <- gsub("HALLMARK_", "", Hs.H$V1)
+Hs.H$V1 <- gsub("_", " ", Hs.H$V1)
+
+set.seed(111)
+pathwayplot <- gsea.fx(res_all)
+
+#note that order of a few nonsignificant pathways are random due to ties in stats
+pdf(paste0(plotpath, "Fig5A.pdf"), width = 20, height = 20)
+pathwayplot
+dev.off()
+
+#Fig5B
+
+res_all$threshold <- NA
+res_all$threshold[ res_all$log2FoldChange > 1 &res_all$padj < 0.05] <- "Up-regulated"
+res_all$threshold[ res_all$log2FoldChange < -1 & res_all$padj < 0.05] <- "Down-regulated"
+res_all$threshold[ is.na(res_all$threshold)] <- "not significant"
+
+vp <- volcano.fx(res_all, 1, 0.05, "Differential gene expression\n(PR + SD vs. PD)") +
+  geom_vline(xintercept = c(-1, 1), linetype="dashed", color = "black") 
+
+pdf(paste0(plotpath, "Fig5B.pdf"),
+    width = 10, height = 10)
+vp
+dev.off()
+
+
+
+
+
 
 wgcnagenes_mat <- read.csv(file = paste0(datapath, "th_tpm_wgcna_genes.csv"),
                           header = T, stringsAsFactors = F, row.names = 1, check.names = F) 
