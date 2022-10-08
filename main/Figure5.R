@@ -144,15 +144,13 @@ hgnc_ensembl_ids <- read.csv(file = paste0(datapath, "hgnc_ensembl_ids.csv"),
                              header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
 
 #Use Ensembl id to compare iMatrix data and TH data. They are more reliable
-rownames(tpm_mat) <- hgnc_ensembl_ids$ensembl_id
+rownames(tpm_mat) <- hgnc_ensembl_ids$ensembl_id[ match(rownames(tpm_mat), hgnc_ensembl_ids$hgnc_symbol)]
 
 # log2
 tpm_mat_log2 <- log2(tpm_mat + 1)
 
-
 # genes in TH and iMATRIX
 mygene_modules <- gene_module_th[ gene_module_th$ensembl_id %in% rownames(tpm_mat_log2),]
-
 
 #Order same as heatmap
 labelorders <- c('TH_7','TH_14','TH_17','TH_24','TH_28','TH_6','TH_18',
@@ -235,15 +233,158 @@ forestplot(tabtext, fn.ci_norm = fn, hrs, new_page = TRUE, xlog = TRUE,
 dev.off()
 
 
+# Fig5E
+
+mygen <- c('ENSG00000116824', 'ENSG00000167286', 'ENSG00000198851', 'ENSG00000160654', 
+           'ENSG00000186810', 'ENSG00000234745', 'ENSG00000204642', 'ENSG00000240065', 
+           'ENSG00000172673', 'ENSG00000160185')
+
+pedges_ssgsea <- GSVA::gsva(as.matrix(tpm_mat_log2), list(mygen), method = "ssgsea", ssgsea.norm= TRUE)
+
+metadata_ges <- cbind(metadata, pedges_ssgsea[,metadata$sample_id])
+colnames(metadata_ges)[ colnames(metadata_ges) == "pedges_ssgsea[, metadata$sample_id]"] <- "PedGES_GSEA"
+
+summary(metadata_ges$PedGES_GSEA)
+
+metadata_ges$GES_Group <- NA
+metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA >= 1.4272] <- "High"
+
+metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA < 1.4272 &
+                          metadata_ges$PedGES_GSEA > 1.0413] <- "Intermediate"
+
+metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA <= 1.0413] <- "Low"
+
+sfit <- survfit(Surv(TRTDUR, progressed)~ GES_Group, data= metadata_ges)
+
+kmplot <- ggsurvplot(sfit, 
+                     conf.int=FALSE, palette = c("#ED2024", "#adadad", "#3953A4"),
+                     pval = TRUE, pval.size = 10, pval.coord = c(300, 0.75),
+                     risk.table=TRUE, fontsize = 20,
+                     xlim = c(0,800),break.x.by = 200,
+                     legend = c(0.7, 0.95), font.legend = 35, legend.title = "",
+                     legend.labs = c("High","Intermediate", "Low"),
+                     font.main = 35, font.x = 35, font.y = 35, font.tickslab = 35,
+                     ylab = "Progression-free survival") 
+
+kmplot$table <- ggrisktable(sfit, data = metadata_ges, 
+                            color = "strata", 
+                            palette = c("#ED2024", "#adadad", "#3953A4"),
+                            fontsize = 12, 
+                            xlim = c(0,800),break.x.by = 200, 
+                            tables.theme = theme_cleantable(), font.tickslab = 30, 
+                            y.text = TRUE, ylab = "",  xlab = "Time (days)",
+                            legend.labs = c("High","Intermediate", "Low"))
+
+kmplot$table <- kmplot$table + theme(plot.title = element_blank(),
+                                     axis.text.x = element_text(size = 35), axis.title.x = element_text(size = 35))
+
+kmplot$plot <- kmplot$plot + labs(title = "iMATRIX-atezo\n") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(), legend.key.size = unit(1, 'cm'))
+
+pdf(file = paste0(plotpath,"Fig5E.pdf"),
+    width = 10, 
+    height = 10,
+    useDingbats = FALSE,
+    onefile = FALSE)
+kmplot
+dev.off()
+
+# Fig5F
 
 
+metadata_modules_riaz_tabS2$GES_group <- NA
+metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA >= 0.60221] <- "High"
+
+metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA < 0.60221 &
+                                         metadata_modules_riaz_tabS2$PedGES_GSEA > 0.26879] <- "Intermediate"
+
+metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA <= 0.26879] <- "Low"
+
+sfit <- survfit(Surv(PFS, progressed)~ GES_group, 
+                data= metadata_modules_riaz_tabS2[metadata_modules_riaz_tabS2$Cohort == "NIV3-PROG",])
+
+kmplot <- ggsurvplot(sfit, 
+                     conf.int=FALSE, palette = c("#ED2024", "#adadad", "#3953A4"),
+                     pval = TRUE, pval.size = 10, pval.coord = c(300, 0.75),
+                     risk.table=TRUE, fontsize = 20,
+                     legend = c(0.7, 0.95), font.legend = 35, legend.title = "",
+                     legend.labs = c("High","Intermediate", "Low"),
+                     font.main = 35, font.x = 35, font.y = 35, font.tickslab = 35,
+                     xlim = c(0,1000),break.x.by = 250,
+                     ylab = "Progression-free survival") 
+
+kmplot$table <- ggrisktable(sfit, data = metadata_modules, 
+                            color = "strata", 
+                            palette = c("#ED2024", "#adadad", "#3953A4"),
+                            fontsize = 12,
+                            tables.theme = theme_cleantable(), font.tickslab = 30,
+                            xlim = c(0,1000),break.x.by = 250, 
+                            y.text = TRUE, ylab = "",  xlab = "Time (days)",
+                            legend.labs = c("High","Intermediate", "Low"))
+
+kmplot$table <- kmplot$table + theme(plot.title = element_blank(),
+                                     axis.text.x = element_text(size = 35),axis.title.x = element_text(size = 35))
+
+kmplot$plot <- kmplot$plot + labs(title = "Riaz et al 2017\nNivo treatment after Ipi Prog") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(), legend.key.size = unit(1, 'cm'))
+
+pdf(file = paste0(plotpath,"KM_pedGES_ssGSEA_NIV3_PROG_Riaz.pdf"),
+    width = 10, 
+    height = 10,
+    useDingbats = FALSE,
+    onefile = FALSE)
+kmplot
+dev.off()
 
 
+# Fig5G
+
+ins$GES_group <- NA
+ins$GES_group[ ins$PedGES_GSEA >= 1.3693] <- "High"
+
+ins$GES_group[ ins$PedGES_GSEA < 1.3693 &
+                 ins$PedGES_GSEA > 1.0031] <- "Intermediate"
+
+ins$GES_group[ ins$PedGES_GSEA <= 1.0031] <- "Low"
 
 
+sfit <- survfit(Surv(OSTIME_Months, OSevent)~ GES_group, data= ins)
 
+kmplot <- ggsurvplot(sfit, 
+                     conf.int=FALSE, palette = c("#ED2024", "#adadad", "#3953A4"),
+                     pval = TRUE, pval.size = 10, pval.coord = c(30, 0.75),
+                     risk.table=TRUE, fontsize = 20,
+                     xlim = c(0,40),break.x.by = 10,
+                     legend = c(0.7, 0.95), font.legend = 35, legend.title = "",
+                     legend.labs = c("High","Intermediate", "Low"),
+                     font.main = 35, font.x = 35, font.y = 35, font.tickslab = 35,
+                     ylab = "Overall survival") 
 
+kmplot$table <- ggrisktable(sfit, data = metadata_modules, 
+                            color = "strata", 
+                            palette = c("#ED2024", "#adadad", "#3953A4"),
+                            fontsize = 12,
+                            xlim = c(0,40),break.x.by = 10,
+                            tables.theme = theme_cleantable(), font.tickslab = 30, 
+                            y.text = TRUE, ylab = "",  xlab = "Time (months)",
+                            legend.labs = c("High","Intermediate", "Low"))
 
+kmplot$table <- kmplot$table + theme(plot.title = element_blank(),
+                                     axis.text.x = element_text(size = 35), axis.title.x = element_text(size = 35))
+
+kmplot$plot <- kmplot$plot + labs(title = "INSPIRE\n") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(), legend.key.size = unit(1, 'cm'))
+
+pdf(file = paste0(plotpath,"KM_pedGES_ssGSEA_INSPIRE.pdf"),
+    width = 10, 
+    height = 10,
+    useDingbats = FALSE,
+    onefile = FALSE)
+kmplot
+dev.off()
 
 
 
