@@ -292,17 +292,22 @@ dev.off()
 
 # Fig5F
 
+#modified from tableS2 riaz et al
+load(file = paste0("~/git//iMATRIX-Atezo_Biomarker/data/riaz_tabS2.RData")) 
 
-metadata_modules_riaz_tabS2$GES_group <- NA
-metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA >= 0.60221] <- "High"
 
-metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA < 0.60221 &
-                                         metadata_modules_riaz_tabS2$PedGES_GSEA > 0.26879] <- "Intermediate"
+summary(riaz_tabS2$PedGES_GSEA)
 
-metadata_modules_riaz_tabS2$GES_group[ metadata_modules_riaz_tabS2$PedGES_GSEA <= 0.26879] <- "Low"
+riaz_tabS2$GES_group <- NA
+riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA >= 0.60221] <- "High"
+
+riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA < 0.60221 &
+                      riaz_tabS2$PedGES_GSEA > 0.26879] <- "Intermediate"
+
+riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA <= 0.26879] <- "Low"
 
 sfit <- survfit(Surv(PFS, progressed)~ GES_group, 
-                data= metadata_modules_riaz_tabS2[metadata_modules_riaz_tabS2$Cohort == "NIV3-PROG",])
+                data= riaz_tabS2[riaz_tabS2$Cohort == "NIV3-PROG",])
 
 kmplot <- ggsurvplot(sfit, 
                      conf.int=FALSE, palette = c("#ED2024", "#adadad", "#3953A4"),
@@ -314,7 +319,7 @@ kmplot <- ggsurvplot(sfit,
                      xlim = c(0,1000),break.x.by = 250,
                      ylab = "Progression-free survival") 
 
-kmplot$table <- ggrisktable(sfit, data = metadata_modules, 
+kmplot$table <- ggrisktable(sfit, data = riaz_tabS2[riaz_tabS2$Cohort == "NIV3-PROG",], 
                             color = "strata", 
                             palette = c("#ED2024", "#adadad", "#3953A4"),
                             fontsize = 12,
@@ -324,13 +329,15 @@ kmplot$table <- ggrisktable(sfit, data = metadata_modules,
                             legend.labs = c("High","Intermediate", "Low"))
 
 kmplot$table <- kmplot$table + theme(plot.title = element_blank(),
-                                     axis.text.x = element_text(size = 35),axis.title.x = element_text(size = 35))
+                                     axis.text.x = element_text(size = 35),
+                                     axis.title.x = element_text(size = 35),
+                                     plot.margin = unit(c(0,1,0,0), "cm"),)
 
 kmplot$plot <- kmplot$plot + labs(title = "Riaz et al 2017\nNivo treatment after Ipi Prog") +
-  theme(plot.title = element_text(hjust = 0.5),
+  theme(plot.title = element_text(hjust = 0.5), plot.margin = unit(c(0,1,0,0), "cm"),
         axis.title.x = element_blank(), legend.key.size = unit(1, 'cm'))
 
-pdf(file = paste0(plotpath,"KM_pedGES_ssGSEA_NIV3_PROG_Riaz.pdf"),
+pdf(file = paste0(plotpath,"Fig5F.pdf"),
     width = 10, 
     height = 10,
     useDingbats = FALSE,
