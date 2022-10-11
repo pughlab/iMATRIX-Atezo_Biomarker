@@ -293,7 +293,7 @@ dev.off()
 # Fig5F
 
 #modified from tableS2 riaz et al
-load(file = paste0("~/git//iMATRIX-Atezo_Biomarker/data/riaz_tabS2.RData")) 
+load(file = paste0(datapath,"riaz_tabS2.RData")) 
 
 
 summary(riaz_tabS2$PedGES_GSEA)
@@ -345,8 +345,12 @@ pdf(file = paste0(plotpath,"Fig5F.pdf"),
 kmplot
 dev.off()
 
-
 # Fig5G
+
+# modified from Cindy Nat Comm paper
+load(file = paste0(datapath,"ins.RData")) 
+
+summary(ins$PedGES_GSEA)
 
 ins$GES_group <- NA
 ins$GES_group[ ins$PedGES_GSEA >= 1.3693] <- "High"
@@ -369,7 +373,7 @@ kmplot <- ggsurvplot(sfit,
                      font.main = 35, font.x = 35, font.y = 35, font.tickslab = 35,
                      ylab = "Overall survival") 
 
-kmplot$table <- ggrisktable(sfit, data = metadata_modules, 
+kmplot$table <- ggrisktable(sfit, data = ins, 
                             color = "strata", 
                             palette = c("#ED2024", "#adadad", "#3953A4"),
                             fontsize = 12,
@@ -385,23 +389,11 @@ kmplot$plot <- kmplot$plot + labs(title = "INSPIRE\n") +
   theme(plot.title = element_text(hjust = 0.5),
         axis.title.x = element_blank(), legend.key.size = unit(1, 'cm'))
 
-pdf(file = paste0(plotpath,"KM_pedGES_ssGSEA_INSPIRE.pdf"),
+pdf(file = paste0(plotpath,"Fig5G.pdf"),
     width = 10, 
     height = 10,
     useDingbats = FALSE,
     onefile = FALSE)
 kmplot
 dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
 
