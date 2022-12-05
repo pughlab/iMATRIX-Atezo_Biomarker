@@ -6,7 +6,7 @@ library(survminer)
 library(survival)
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
-datapath <- paste0(mainpath,"data_1/")
+datapath <- paste0(mainpath,"data/")
 
 dir.create(file.path(paste0(mainpath, "out/")))
 
