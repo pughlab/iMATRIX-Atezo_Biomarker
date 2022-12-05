@@ -3,11 +3,9 @@
 ###############
 options(scipen = 999)
 
-
 library(survminer)
 library(survival)
 library(forestmodel)
-
 library(ggsignif)
 library(ggbeeswarm)
 
@@ -22,7 +20,7 @@ setwd(mainpath)
 
 source(paste0(mainpath, "R/ggplot2_theme.R"))
 
-metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v3.csv"), header = T, stringsAsFactors = F, check.names = F)
 
 message("summary for PDL1 immune cells (IHC) in the iMATRIX-Atezo:")
 summary(metadata$IHC_PDL1IC)
@@ -30,7 +28,6 @@ message("summary for PDL1 tumor cells (IHC) in the iMATRIX-Atezo:")
 summary(metadata$IHC_PDL1TC)
 
 #Fig3A
-
 metadata$PDL1 <- factor(metadata$PDL1, levels = c("No expression", "Low", "High"))
 
 metadata$PDL1group <- NA
@@ -74,12 +71,12 @@ pdf(file = paste0(plotpath,"Fig3A.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
+
 # Fig3B
 metadata$PDL1group <- factor(metadata$PDL1group, levels = c("Low/No", "High"))
-
 #cox model
 coxmodel <- coxph(Surv(TRTDUR, progressed)~ PDL1group + cancer + AGE, data= metadata) 
-
 summary(coxmodel)
 
 pcox <- forest_model(coxmodel,exponentiate = TRUE) + 
@@ -93,18 +90,15 @@ pcox
 dev.off()
 
 # Fig 3C
-
-genemat <- read.csv(file.path(datapath,"IND_tpm_hg38_final.csv"),header = T, stringsAsFactors = F, check.names = F, row.names = 1)
+genemat <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_tpm_matrix_hg38.csv"),header = T, stringsAsFactors = F, check.names = F, row.names = 1)
 
 pdl1_exp <- genemat[which(rownames(genemat) == "CD274"),, drop = T]
 
 metadata$PDL1_gene <- NA
-metadata$PDL1_gene <- pdl1_exp[match(metadata$sample_id, names(pdl1_exp))]
-
+metadata$PDL1_gene <- pdl1_exp[match(metadata$trunc_anonymized_rnaseq_sample_id, names(pdl1_exp))]
 metadata$PDL1_gene <- as.numeric(metadata$PDL1_gene)
 
 summary(metadata$PDL1_gene)
-
 tapply(metadata$PDL1_gene, metadata$PDL1group, summary)
 
 metadata$PDL1g <- NA
@@ -112,7 +106,6 @@ metadata$PDL1g[ metadata$PDL1_gene >= 4.817] <- "High"
 metadata$PDL1g[ metadata$PDL1_gene < 4.817 &
                   metadata$PDL1_gene > 0.475] <- "Intermediate"
 metadata$PDL1g[ metadata$PDL1_gene <= 0.475] <- "Low"
-
 
 sfit <- survfit(Surv(TRTDUR, progressed) ~ PDL1g, data= metadata)
 
@@ -150,9 +143,9 @@ pdf(file = paste0(plotpath,"Fig3C.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
 
 # Fig 3D
-
 tmp <- metadata[!is.na(metadata$IHC_PDL1TC),]
 tmp<- tmp[ !is.na(tmp$IHC_CD8),]
 
@@ -181,5 +174,3 @@ pdf(file = paste0(plotpath,"Fig3D.pdf"),
     onefile = FALSE)
 p
 dev.off()
-
-
