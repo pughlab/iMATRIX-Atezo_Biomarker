@@ -3,7 +3,7 @@
 ###############
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
-datapath <- paste0(mainpath,"data_1/")
+datapath <- paste0(mainpath,"data/")
 
 dir.create(file.path(paste0(mainpath, "out/")))
 
@@ -76,7 +76,7 @@ rownames(mycohorts) <- "Cohort"
 cohorts_hm <- cohorts_hm.fx(mycohorts)
 
 # heatmap for objective response
-myresponse <- metadata$AVALC # or BCOR-INV
+myresponse <- metadata$`BCOR-INV`
 names(myresponse) <- metadata$trunc_anonymized_rnaseq_sample_id
 myresponse <- t(as.matrix(myresponse))
 rownames(myresponse) <- "Objective response"
