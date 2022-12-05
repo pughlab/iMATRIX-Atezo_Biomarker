@@ -6,7 +6,7 @@ library(survminer)
 library(survival)
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
-datapath <- paste0(mainpath,"data/")
+datapath <- paste0(mainpath,"data_1/")
 
 dir.create(file.path(paste0(mainpath, "out/")))
 
@@ -19,15 +19,13 @@ source(paste0(mainpath, "R/plotting_functions.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
 
 
-metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), 
-                     header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v3.csv"),header = T, stringsAsFactors = F, check.names = F)
 
 metadata <- metadata[ !is.na(metadata$observed_Shannon),]
 metadata <- metadata[order(metadata$cancer, metadata$observed_Shannon), ]
-metadata$sample_id_DNA <- factor(metadata$sample_id_DNA, levels = metadata$sample_id_DNA)
+metadata$trunc_anonymized_tcrseq_sample_id <- factor(metadata$trunc_anonymized_tcrseq_sample_id, levels = metadata$trunc_anonymized_tcrseq_sample_id)
 
 #Fig4A
-
 # diversity plot
 summary(metadata$observed_Shannon)
 
@@ -43,7 +41,7 @@ colpal <- c("High" = "#ED2024",
 
 divplot <- ggplot(data = metadata, 
                   aes(y = observed_Shannon, 
-                      x = sample_id_DNA)) + 
+                      x = trunc_anonymized_tcrseq_sample_id)) + 
   geom_bar(aes(fill = Div_group),colour = "#000000", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -61,15 +59,15 @@ divplot <- divplot + annotation_logticks(sides = "l") +
   scale_y_continuous(trans = "log10") + scale_fill_manual(values = colpal) + labs(y = "TCRb diversity")
 
 # clone plot
-compldfle <- read.csv(file.path(datapath,"captcrseq.csv"), header = T, stringsAsFactors = F, check.names = F)
+compldfle <- read.csv(file.path(datapath,"anonymized_TableS2.csv"), header = T, stringsAsFactors = F, check.names = F)
 
-compldfle$samplename <- as.factor(compldfle$samplename)
+compldfle$trunc_anonymized_sample_id <- as.factor(compldfle$trunc_anonymized_sample_id)
 compldfle$cloneno <- as.factor(compldfle$cloneno)
-compldfle$samplename <- factor(compldfle$samplename, levels = metadata$sample_id_DNA)
+compldfle$trunc_anonymized_sample_id <- factor(compldfle$trunc_anonymized_sample_id, levels = metadata$trunc_anonymized_tcrseq_sample_id)
 
 clonenocol <- rep("#ffffff", nlevels(compldfle$cloneno))
 
-clonpt <- ggplot(data = compldfle, aes(y = cloneFraction, x = samplename, fill = cloneno)) + 
+clonpt <- ggplot(data = compldfle, aes(y = cloneFraction, x = trunc_anonymized_sample_id, fill = cloneno)) + 
   geom_bar(colour = "#000000", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -86,14 +84,13 @@ clonpt <- ggplot(data = compldfle, aes(y = cloneFraction, x = samplename, fill =
   labs(y = "TCRb clonal\nfraction")
 
 #Gliph2 plot
-
-gliph2 <- read.csv(file.path(datapath,"gliph2.csv"), header = T, stringsAsFactors = F, check.names = F)
+gliph2 <- read.csv(file.path(datapath,"anonymized_TableS3.csv"), header = T, stringsAsFactors = F, check.names = F)
 
 # Add number of sample specific gliph types
 metadata$gliph2_type <- NA
 for(i in 1:nrow(metadata)){
-  mysample <- metadata$sample_id_DNA[i]
-  mygliph <- gliph2[gliph2$Sample == mysample,]
+  mysample <- metadata$trunc_anonymized_tcrseq_sample_id[i]
+  mygliph <- gliph2[ gliph2$trunc_anonymized_sample_id == mysample,]
   gliphtab <- as.data.frame(table(mygliph$type), stringsAsFactors = F)
   #count number of gliph types that have more than one cdr3 in a given sample    
   if(nrow(gliphtab) !=0 ){
@@ -103,7 +100,7 @@ for(i in 1:nrow(metadata)){
 #convert NAs to zero
 metadata$gliph2_type[ is.na(metadata$gliph2_type)] <- 0
 
-gliphplot <- ggplot(data = metadata, aes(y = gliph2_type, x = sample_id_DNA)) + 
+gliphplot <- ggplot(data = metadata, aes(y = gliph2_type, x = trunc_anonymized_tcrseq_sample_id)) + 
   geom_bar(colour = "#000000", fill = "#adadad", stat="identity", width = 0.8) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
@@ -131,7 +128,7 @@ metadata$origin <- NA
 metadata$origin[ metadata$sample_origin == "Lymph node"] <- "Lymph node"
 metadata$origin[ metadata$sample_origin != "Lymph node"] <- "Other tissue"
 myorigin <- metadata$origin
-names(myorigin) <- metadata$sample_id_DNA
+names(myorigin) <- metadata$trunc_anonymized_tcrseq_sample_id
 myorigin <- t(as.matrix(myorigin))
 rownames(myorigin) <- "Lymph node\n/Other tissue"
 
@@ -139,10 +136,9 @@ origin_hm <- origin_hm.fx(myorigin)
 
 # Heatmap for tumour type
 mytype <- metadata$tumor_type
-names(mytype) <- metadata$sample_id_DNA
+names(mytype) <- metadata$trunc_anonymized_tcrseq_sample_id
 mytype <- t(as.matrix(mytype))
 rownames(mytype) <- "Primary/Metastatic"
-
 type_hm <- type_hm.fx(mytype)
 
 #export
@@ -153,7 +149,6 @@ draw(type_hm %v% origin_hm,heatmap_legend_side = "bottom")
 dev.off()
 
 # Fig4B
-
 metadata$Div_group <- NA
 metadata$Div_group[metadata$observed_Shannon >= 80.269] <- "High"
 metadata$Div_group[metadata$observed_Shannon < 80.269 &
@@ -195,8 +190,9 @@ pdf(file = paste0(plotpath,"Fig4B.pdf"),
 kmplot
 dev.off()
 
-#Fig4C
+rm(kmplot)
 
+#Fig4C
 # remove lymph nodes
 tmp <- metadata[ metadata$sample_origin != "Lymph node",]
 
@@ -239,5 +235,6 @@ pdf(file = paste0(plotpath,"Fig4C.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
 
 
