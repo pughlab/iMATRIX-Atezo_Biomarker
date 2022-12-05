@@ -10,7 +10,7 @@ library(ggrepel)
 library(forestplot)
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
-datapath <- paste0(mainpath,"data_1/")
+datapath <- paste0(mainpath,"data/")
 
 dir.create(file.path(paste0(mainpath, "out/")))
 plotpath <- paste0(mainpath,"out/")
@@ -22,7 +22,6 @@ source(paste0(mainpath, "R/plotting_functions.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
 
 #Fig5A
-
 load(file = paste0(datapath, "DESeq2_results_allsamples.RData"))
 
 res_all[which(res_all$padj < 0.1),]
