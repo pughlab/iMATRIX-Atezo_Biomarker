@@ -5,10 +5,16 @@ This repo contains custom R codes used for figures in the manuscript "Multimodal
 ## Dependencies
 survminer,
 survival,
+forestplot,
 ggplot2,
+ggbeeswarm,
+ggsignif,
 ComplexHeatmap,
 circlize,
-Hmisc
+Hmisc,
+fgsea,
+ggrepel
+
 
 ## How to run
 Clone the repo to your home directory (`~/`). Upon data request approval (see below), download supplementary tables in `data/`. Run scripts in `main/`. Output will be in folder `out/`.
