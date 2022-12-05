@@ -7,12 +7,12 @@ library(survival)
 library(Hmisc)
 library(fgsea)
 library(ggrepel)
+library(forestplot)
 
 mainpath <- "~/git/iMATRIX-Atezo_Biomarker/"
-datapath <- paste0(mainpath,"data/")
+datapath <- paste0(mainpath,"data_1/")
 
 dir.create(file.path(paste0(mainpath, "out/")))
-
 plotpath <- paste0(mainpath,"out/")
 
 setwd(mainpath)
@@ -27,8 +27,7 @@ load(file = paste0(datapath, "DESeq2_results_allsamples.RData"))
 
 res_all[which(res_all$padj < 0.1),]
 
-Hs.H <- read.table(paste0(datapath, "h.all.v7.1.symbols.gmt"), 
-                   header = F, check.names = F, sep = "\t", fill = T, stringsAsFactors = F)
+Hs.H <- read.table(paste0(datapath, "h.all.v7.1.symbols.gmt"), header = F, check.names = F, sep = "\t", fill = T, stringsAsFactors = F)
 
 #clean up V1 for aesthetics
 Hs.H$V1 <- gsub("HALLMARK_", "", Hs.H$V1)
@@ -43,7 +42,6 @@ pathwayplot
 dev.off()
 
 #Fig5B
-
 res_all$threshold <- NA
 res_all$threshold[ res_all$log2FoldChange > 1 &res_all$padj < 0.05] <- "Up-regulated"
 res_all$threshold[ res_all$log2FoldChange < -1 & res_all$padj < 0.05] <- "Down-regulated"
@@ -52,11 +50,9 @@ res_all$threshold[ is.na(res_all$threshold)] <- "not significant"
 vp <- volcano.fx(res_all, 1, 0.05, "Differential gene expression\n(PR + SD vs. PD)") +
   geom_vline(xintercept = c(-1, 1), linetype="dashed", color = "black") 
 
-pdf(paste0(plotpath, "Fig5B.pdf"),
-    width = 10, height = 10)
+pdf(paste0(plotpath, "Fig5B.pdf"),width = 10, height = 10)
 vp
 dev.off()
-
 
 #Fig5C
 load(paste0(datapath, "Consensus_Network_TH_manual_signed_20.RData"))
@@ -99,18 +95,15 @@ draw(hm_cor)
 dev.off()
 
 #Fig5D
-
-metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v3.csv"), header = T, stringsAsFactors = F, check.names = F)
 
 ## gene_module
-gene_module_th <- read.csv(file = paste0(datapath, "gene_module_treehouse_manual_signed_20.csv"),
-                           header = T, stringsAsFactors = F,row.names = 1,check.names = F) 
+gene_module_th <- read.csv(file = paste0(datapath, "gene_module_treehouse_manual_signed_20.csv"),header = T, stringsAsFactors = F,row.names = 1,check.names = F) 
 gene_module_th <- gene_module_th[ gene_module_th$moduleColor != "grey",]
 gene_module_th$moduleLabel <- paste0("TH_", gene_module_th$moduleLabel)
 
 ## GO_module
-GO_modules <- read.csv(file.path(datapath,"GO_TH_cons_manual_signed_20.csv"),
-                       header = T, stringsAsFactors = F, check.names = F, row.names = 1)  
+GO_modules <- read.csv(file.path(datapath,"GO_TH_cons_manual_signed_20.csv"), header = T, stringsAsFactors = F, check.names = F, row.names = 1)  
 GO_modules <- GO_modules[ GO_modules$module != "grey",]
 GO_modules$moduleLabel <- gene_module_th$moduleLabel[match(GO_modules$module, gene_module_th$moduleColor)]
 
@@ -124,7 +117,6 @@ GO_modules <- GO_modules[ GO_modules$nModGenesInTerm >= 9,]
 
 ## get one rather simplified GO term for each module by choosing the GO terrm with minimum number of genes (> 9)
 GO_modules$myterm <- NA
-
 for(i in unique(GO_modules$moduleLabel)){
   tmp <- GO_modules[ GO_modules$moduleLabel == i,]
   moduleterm <- tmp$termName[tmp$nModGenesInTerm == min(tmp$nModGenesInTerm)][1] #use one term if min returns two terms
@@ -133,15 +125,12 @@ for(i in unique(GO_modules$moduleLabel)){
 }
 
 dim(gene_module_th)
-
 dim(GO_modules)
 
 # expression matrix
-tpm_mat <- read.csv(file = paste0(datapath, "IND_tpm_hg38_final.csv"), 
-                    header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
+tpm_mat <- read.csv(file = paste0(datapath, "anonymized_iMATRIX_Atezo_tpm_matrix_hg38.csv"), header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
 
-hgnc_ensembl_ids <- read.csv(file = paste0(datapath, "hgnc_ensembl_ids.csv"), 
-                             header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
+hgnc_ensembl_ids <- read.csv(file = paste0(datapath, "hgnc_ensembl_ids.csv"), header = T, stringsAsFactors = F,check.names = F, row.names = 1) 
 
 #Use Ensembl id to compare iMatrix data and TH data. They are more reliable
 rownames(tpm_mat) <- hgnc_ensembl_ids$ensembl_id[ match(rownames(tpm_mat), hgnc_ensembl_ids$hgnc_symbol)]
@@ -172,7 +161,7 @@ for(mod in 1:nrow(module_sample)){
 module_sample_t <- as.data.frame(t(module_sample))
 module_sample_t$sample_id <- rownames(module_sample_t)
 
-metadata_modules <- merge(metadata, module_sample_t, by = "sample_id")
+metadata_modules <- merge(metadata, module_sample_t, by.x =  "trunc_anonymized_rnaseq_sample_id", by.y =  "sample_id")
 
 module_cox <- matrix(nrow = nrow(module_sample), ncol = 7)
 rownames(module_cox) <- rownames(module_sample)
@@ -191,9 +180,7 @@ for(i in rownames(module_cox)){
 fdr_df <- as.matrix(p.adjust(module_cox[,5], method = "fdr"))
 colnames(fdr_df)[1] <- "fdr"
 module_cox <- cbind(module_cox, fdr_df)
-
 module_cox <- as.data.frame(module_cox)
-
 module_cox$term <- NA
 module_cox$term <- GO_modules$myterm[match(rownames(module_cox),GO_modules$moduleLabel)]
 
@@ -232,26 +219,22 @@ forestplot(tabtext, fn.ci_norm = fn, hrs, new_page = TRUE, xlog = TRUE,
            title = "Survival analysis (iMATRIX-atezo)(p-value, FDR)", boxsize = 0.25)
 dev.off()
 
-
 # Fig5E
-
 mygen <- c('ENSG00000116824', 'ENSG00000167286', 'ENSG00000198851', 'ENSG00000160654', 
            'ENSG00000186810', 'ENSG00000234745', 'ENSG00000204642', 'ENSG00000240065', 
            'ENSG00000172673', 'ENSG00000160185')
 
 pedges_ssgsea <- GSVA::gsva(as.matrix(tpm_mat_log2), list(mygen), method = "ssgsea", ssgsea.norm= TRUE)
 
-metadata_ges <- cbind(metadata, pedges_ssgsea[,metadata$sample_id])
-colnames(metadata_ges)[ colnames(metadata_ges) == "pedges_ssgsea[, metadata$sample_id]"] <- "PedGES_GSEA"
+metadata_ges <- cbind(metadata, pedges_ssgsea[,metadata$trunc_anonymized_rnaseq_sample_id])
+colnames(metadata_ges)[ colnames(metadata_ges) == "pedges_ssgsea[, metadata$trunc_anonymized_rnaseq_sample_id]"] <- "PedGES_GSEA"
 
 summary(metadata_ges$PedGES_GSEA)
 
 metadata_ges$GES_Group <- NA
 metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA >= 1.4272] <- "High"
-
 metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA < 1.4272 &
                           metadata_ges$PedGES_GSEA > 1.0413] <- "Intermediate"
-
 metadata_ges$GES_Group[ metadata_ges$PedGES_GSEA <= 1.0413] <- "Low"
 
 sfit <- survfit(Surv(TRTDUR, progressed)~ GES_Group, data= metadata_ges)
@@ -290,8 +273,9 @@ pdf(file = paste0(plotpath,"Fig5E.pdf"),
 kmplot
 dev.off()
 
-# Fig5F
+rm(kmplot)
 
+# Fig5F
 #modified from tableS2 riaz et al
 load(file = paste0(datapath,"riaz_tabS2.RData")) 
 
@@ -300,10 +284,8 @@ summary(riaz_tabS2$PedGES_GSEA)
 
 riaz_tabS2$GES_group <- NA
 riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA >= 0.60221] <- "High"
-
 riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA < 0.60221 &
                       riaz_tabS2$PedGES_GSEA > 0.26879] <- "Intermediate"
-
 riaz_tabS2$GES_group[ riaz_tabS2$PedGES_GSEA <= 0.26879] <- "Low"
 
 sfit <- survfit(Surv(PFS, progressed)~ GES_group, 
@@ -345,8 +327,9 @@ pdf(file = paste0(plotpath,"Fig5F.pdf"),
 kmplot
 dev.off()
 
-# Fig5G
+rm(kmplot)
 
+# Fig5G
 # modified from Cindy Nat Comm paper
 load(file = paste0(datapath,"ins.RData")) 
 
@@ -354,12 +337,9 @@ summary(ins$PedGES_GSEA)
 
 ins$GES_group <- NA
 ins$GES_group[ ins$PedGES_GSEA >= 1.3693] <- "High"
-
 ins$GES_group[ ins$PedGES_GSEA < 1.3693 &
                  ins$PedGES_GSEA > 1.0031] <- "Intermediate"
-
 ins$GES_group[ ins$PedGES_GSEA <= 1.0031] <- "Low"
-
 
 sfit <- survfit(Surv(OSTIME_Months, OSevent)~ GES_group, data= ins)
 
@@ -397,3 +377,4 @@ pdf(file = paste0(plotpath,"Fig5G.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
