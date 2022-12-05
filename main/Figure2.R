@@ -18,8 +18,7 @@ source(paste0(mainpath, "R/ggplot2_theme.R"))
 source(paste0(mainpath, "R/Heatmap_functions.R"))
 source(paste0(mainpath, "R/Splot_function.R"))
 
-metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), 
-                     header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v3.csv"), header = T, stringsAsFactors = F, check.names = F)
 
 message("summary for CD8 staining (IHC) in the iMATRIX-Atezo:")
 summary(metadata$IHC_CD8)
@@ -69,8 +68,9 @@ pdf(file = paste0(plotpath,"Fig2A.pdf"),
 kmplot
 dev.off()
 
-# Fig2B
+rm(kmplot)
 
+# Fig2B
 #remove lymph nodes
 sfit <- survfit(Surv(TRTDUR, progressed)~ CD8group, 
                 data= metadata[ metadata$sample_origin != "Lymph node",])
@@ -109,8 +109,10 @@ pdf(file = paste0(plotpath,"Fig2B.pdf"),
 kmplot
 dev.off()
 
-# Fig2C
 
+rm(kmplot)
+
+# Fig2C
 metadata$CD3group <- NA
 metadata$CD3group[metadata$IHC_CD3 >= 3.05] <- "High"
 metadata$CD3group[metadata$IHC_CD3 > 0.16 &
@@ -155,10 +157,10 @@ dev.off()
 
 # Fig2D
 
-metadata <- read.csv(file.path(datapath,"IND_metadata_IHC_trb_tmb.csv"), header = T, stringsAsFactors = F, check.names = F)
-deconv <- read.csv(file.path(datapath,"all_immunedeconv.csv"), header = T, stringsAsFactors = F, check.names = F)
+metadata <- read.csv(file.path(datapath,"anonymized_iMATRIX_Atezo_metadata_IHC_TRB_TMB_v3.csv"), header = T, stringsAsFactors = F, check.names = F)
+deconv <- read.csv(file.path(datapath,"anonymized_all_immunedeconv.csv"), header = T, stringsAsFactors = F, check.names = F)
 
-metadata_deconv <- merge(metadata, deconv, by = "sample_id")
+metadata_deconv <- merge(metadata, deconv, by = "trunc_anonymized_rnaseq_sample_id")
 
 
 message("summary for CD8 estimate from cibersort in the iMATRIX-Atezo:")
@@ -208,9 +210,10 @@ pdf(file = paste0(plotpath,"Fig2D.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
+
 # Fig2E
 #remove lymph node
-
 sfit <- survfit(Surv(TRTDUR, progressed)~ CD8group, 
                 data= metadata_deconv[metadata_deconv$sample_origin != "Lymph node",])
 
@@ -249,9 +252,9 @@ pdf(file = paste0(plotpath,"Fig2E.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
 
 #Fig2F
-
 summary(metadata_deconv$T.cell_mcpcounter)
 
 metadata_deconv$CD8group <- NA
@@ -262,8 +265,7 @@ metadata_deconv$CD8group[metadata_deconv$T.cell_mcpcounter < 4.6172 &
 
 metadata_deconv$CD8group[metadata_deconv$T.cell_mcpcounter <= 0.9173 ] <- "Low"
 
-sfit <- survfit(Surv(TRTDUR, progressed)~ CD8group, 
-                data= metadata_deconv)
+sfit <- survfit(Surv(TRTDUR, progressed)~ CD8group, data= metadata_deconv)
 
 kmplot <- ggsurvplot(sfit, 
                      conf.int=FALSE, palette = c("#ED2024", "#adadad", "#3953A4"),
@@ -300,6 +302,7 @@ pdf(file = paste0(plotpath,"Fig2F.pdf"),
 kmplot
 dev.off()
 
+rm(kmplot)
 
 
 
